@@ -319,15 +319,18 @@ def _get_blob_node_struct(endian: str, version: int) -> tuple[Struct, list[str]]
     return Struct(struct_type), keys
 
 
+CLEAN_NAME_REMOVE_RE = re.compile(r"[\?\*]")
+CLEAN_NAME_REPLACE_RE = re.compile(r"[ \.:\-\[\]]")
+
+
 def clean_name(name: str) -> str:
     # keep in sync with TypeTreeHelper.cpp
     if len(name) == 0:
         return name
     if name.startswith("(int&)"):
         name = name[6:]
-    if name.endswith("?"):
-        name = name[:-1]
-    name = re.sub(r"[ \.:\-\[\]\*]", "_", name)
+    name = CLEAN_NAME_REMOVE_RE.sub("", name)
+    name = CLEAN_NAME_REPLACE_RE.sub("_", name)
     if name in ["pass", "from"]:
         name += "_"
     if name[0].isdigit():

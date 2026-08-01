@@ -11207,9 +11207,9 @@ class SpriteAtlasData:
     textureRect: Rectf
     textureRectOffset: Vector2f
     uvTransform: Vector4f
-    _spriteInstanceData: Optional[SpriteInstanceData] = None
     atlasRectOffset: Optional[Vector2f] = None
     secondaryTextures: Optional[List[SecondarySpriteTexture]] = None
+    spriteInstanceData: Optional[SpriteInstanceData] = None
 
 
 @unitypy_define
