@@ -16,11 +16,9 @@ from typing import (
 
 from attrs import define, field
 
+from ..helpers.Tpk import get_common_strings
 from ..streams.EndianBinaryReader import EndianBinaryReader
 from ..streams.EndianBinaryWriter import EndianBinaryWriter
-
-if TYPE_CHECKING:
-    from .Tpk import UnityVersion
 
 try:
     from ..UnityPyBoost import TypeTreeNode as TypeTreeNodeC  # type: ignore
@@ -302,32 +300,6 @@ class TypeTreeNode(TypeTreeNodeC):
         return self.to_dict() == other.to_dict() and self.m_Children == other.m_Children
 
 
-COMMONSTRING_CACHE: Dict[Optional[UnityVersion], Dict[int, str]] = {}
-
-
-def get_common_strings(version: Optional[UnityVersion] = None) -> Dict[int, str]:
-    if version in COMMONSTRING_CACHE:
-        return COMMONSTRING_CACHE[version]
-
-    from .Tpk import TPKTYPETREE
-
-    tree = TPKTYPETREE
-    common_string = tree.CommonString
-    strings = common_string.GetStrings(tree.StringBuffer)
-    if version:
-        count = common_string.GetCount(version)
-        strings = strings[:count]
-
-    ret: Dict[int, str] = {}
-    offset = 0
-    for string in strings:
-        ret[offset] = string
-        offset += len(string) + 1
-
-    COMMONSTRING_CACHE[version] = ret
-    return ret
-
-
 def _get_blob_node_struct(endian: str, version: int) -> tuple[Struct, list[str]]:
     struct_type = f"{endian}hBBIIiii"
     keys = [
@@ -355,7 +327,7 @@ def clean_name(name: str) -> str:
         name = name[6:]
     if name.endswith("?"):
         name = name[:-1]
-    name = re.sub(r"[ \.:\-\[\]]", "_", name)
+    name = re.sub(r"[ \.:\-\[\]\*]", "_", name)
     if name in ["pass", "from"]:
         name += "_"
     if name[0].isdigit():
